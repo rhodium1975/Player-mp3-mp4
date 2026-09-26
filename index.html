@@ -1,0 +1,720 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+<title>Tocador com Letras</title>
+<meta name="theme-color" content="#14110F" />
+<link rel="manifest" href="manifest.json" />
+<link rel="icon" href="icons/icon-192.png" />
+<link rel="apple-touch-icon" href="icons/icon-192.png" />
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jsmediatags/3.9.7/jsmediatags.min.js"></script>
+<style>
+  :root{
+    --bg:#14110F;
+    --surface:#1E1A16;
+    --surface-2:#26211C;
+    --text:#F2ECE4;
+    --muted:#8C8175;
+    --accent:#E8B34D;
+    --accent-2:#D94F4F;
+    --line:#332C25;
+    --safe-t: env(safe-area-inset-top, 0px);
+    --safe-b: env(safe-area-inset-bottom, 0px);
+    box-sizing:border-box;
+  }
+  *{box-sizing:inherit;}
+  html,body{height:100%;}
+  body{
+    margin:0;
+    background:var(--bg);
+    color:var(--text);
+    font-family:'Inter', system-ui, sans-serif;
+    padding-top:var(--safe-t);
+    padding-bottom:var(--safe-b);
+    -webkit-tap-highlight-color:transparent;
+  }
+  .display, h1, h2, .track-title{
+    font-family:'Space Grotesk', 'Inter', sans-serif;
+  }
+  .wrap{
+    max-width:520px;
+    margin:0 auto;
+    padding:20px 20px 100px;
+    min-height:100%;
+  }
+  header{
+    display:flex;
+    align-items:baseline;
+    justify-content:space-between;
+    margin-bottom:22px;
+  }
+  header h1{
+    font-size:1.25rem;
+    font-weight:600;
+    margin:0;
+    letter-spacing:-0.01em;
+  }
+  header span{
+    font-size:0.8rem;
+    color:var(--muted);
+  }
+
+  /* Disco */
+  .stage{
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    padding:18px 0 8px;
+  }
+  .disc-holder{
+    width:280px;
+    height:280px;
+    position:relative;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+  }
+  #spectrum{
+    position:absolute;
+    top:0;
+    left:0;
+    pointer-events:none;
+  }
+  .disc{
+    width:216px;
+    height:216px;
+    border-radius:50%;
+    background:
+      repeating-radial-gradient(circle at center, var(--surface-2) 0 2px, #201B16 2px 4px);
+    border:1px solid var(--line);
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    animation:spin 6s linear infinite;
+    animation-play-state:paused;
+    box-shadow:0 10px 30px rgba(0,0,0,0.4);
+  }
+  .disc.playing{animation-play-state:running;}
+  .video-player{
+    width:100%;
+    max-height:290px;
+    border-radius:12px;
+    background:#000;
+    display:none;
+  }
+  .disc .label{
+    width:78px;
+    height:78px;
+    border-radius:50%;
+    background:var(--accent);
+    display:flex;
+    align-items:center;
+    justify-content:center;
+  }
+  .disc .label::after{
+    content:'';
+    width:10px;
+    height:10px;
+    border-radius:50%;
+    background:var(--bg);
+  }
+  @keyframes spin{from{transform:rotate(0)}to{transform:rotate(360deg)}}
+
+  .now-playing{
+    text-align:center;
+    margin-top:18px;
+    min-height:52px;
+  }
+  .now-playing .track-title{
+    font-size:1.15rem;
+    font-weight:600;
+    line-height:1.3;
+  }
+  .now-playing .track-artist{
+    font-size:0.9rem;
+    color:var(--muted);
+    margin-top:2px;
+  }
+  .now-playing.empty .track-title{color:var(--muted); font-weight:500;}
+
+  /* Progresso */
+  .progress-row{
+    margin:18px 0 6px;
+    display:flex;
+    align-items:center;
+    gap:10px;
+  }
+  .time{
+    font-size:0.72rem;
+    color:var(--muted);
+    font-variant-numeric:tabular-nums;
+    width:36px;
+  }
+  .time.end{text-align:right;}
+  input[type="range"]{
+    -webkit-appearance:none;
+    appearance:none;
+    flex:1;
+    height:3px;
+    border-radius:2px;
+    background:var(--line);
+    outline:none;
+  }
+  input[type="range"]::-webkit-slider-thumb{
+    -webkit-appearance:none;
+    width:13px;height:13px;border-radius:50%;
+    background:var(--accent);
+    border:none;
+    margin-top:-5px;
+  }
+  input[type="range"]::-moz-range-thumb{
+    width:13px;height:13px;border-radius:50%;
+    background:var(--accent);border:none;
+  }
+  input[type="range"]::-webkit-slider-runnable-track{height:3px;border-radius:2px;}
+
+  /* Controles */
+  .controls{
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    gap:26px;
+    margin:14px 0 28px;
+  }
+  .ctrl-btn{
+    background:none;
+    border:none;
+    color:var(--text);
+    cursor:pointer;
+    padding:8px;
+    display:flex;
+  }
+  .ctrl-btn svg{width:22px;height:22px;}
+  .ctrl-btn.main{
+    width:56px;height:56px;
+    border-radius:50%;
+    background:var(--accent);
+    color:var(--bg);
+    display:flex;align-items:center;justify-content:center;
+    padding:0;
+  }
+  .ctrl-btn.main svg{width:24px;height:24px;}
+
+  /* Adicionar músicas */
+  .add-row{
+    display:flex;
+    gap:10px;
+    margin-bottom:16px;
+  }
+  .btn{
+    flex:1;
+    background:var(--surface);
+    border:1px solid var(--line);
+    color:var(--text);
+    padding:12px 14px;
+    border-radius:10px;
+    font-family:'Inter';
+    font-size:0.88rem;
+    font-weight:500;
+    cursor:pointer;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    gap:8px;
+  }
+  .btn svg{width:16px;height:16px;flex-shrink:0;}
+  input[type="file"]{display:none;}
+
+  /* Abas */
+  .tabs{
+    display:flex;
+    border-bottom:1px solid var(--line);
+    margin-bottom:14px;
+  }
+  .tab{
+    background:none;
+    border:none;
+    color:var(--muted);
+    font-family:'Inter';
+    font-size:0.85rem;
+    font-weight:500;
+    padding:10px 4px;
+    margin-right:22px;
+    cursor:pointer;
+    border-bottom:2px solid transparent;
+  }
+  .tab.active{color:var(--text); border-bottom-color:var(--accent);}
+
+  /* Playlist */
+  .playlist{list-style:none; margin:0; padding:0;}
+  .playlist li{
+    display:flex;
+    align-items:center;
+    gap:12px;
+    padding:11px 8px;
+    border-radius:8px;
+    cursor:pointer;
+  }
+  .playlist li.active{background:var(--surface);}
+  .playlist li .idx{
+    width:20px;
+    font-size:0.78rem;
+    color:var(--muted);
+    text-align:center;
+    flex-shrink:0;
+  }
+  .playlist li.active .idx{color:var(--accent);}
+  .playlist li .meta{flex:1; min-width:0;}
+  .playlist li .meta .t{
+    font-size:0.9rem;
+    font-weight:500;
+    white-space:nowrap;
+    overflow:hidden;
+    text-overflow:ellipsis;
+  }
+  .playlist li .meta .a{
+    font-size:0.76rem;
+    color:var(--muted);
+    white-space:nowrap;
+    overflow:hidden;
+    text-overflow:ellipsis;
+  }
+  .empty-state{
+    color:var(--muted);
+    font-size:0.85rem;
+    text-align:center;
+    padding:36px 10px;
+    line-height:1.6;
+  }
+
+  /* Letras */
+  .lyrics-box{
+    font-size:0.95rem;
+    line-height:1.9;
+    white-space:pre-wrap;
+    color:#DCD5C9;
+    padding-bottom:20px;
+  }
+  .lyrics-status{
+    color:var(--muted);
+    font-size:0.85rem;
+    text-align:center;
+    padding:36px 10px;
+    line-height:1.6;
+  }
+
+  ::-webkit-scrollbar{width:0;height:0;}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <header>
+    <h1>Tocador</h1>
+    <span id="track-count">0 músicas</span>
+  </header>
+
+  <div class="stage">
+    <div class="disc-holder">
+      <canvas id="spectrum" width="280" height="280"></canvas>
+      <div class="disc" id="disc"><div class="label"></div></div>
+    </div>
+    <video class="video-player" id="video-player" playsinline></video>
+    <div class="now-playing empty" id="now-playing">
+      <div class="track-title" id="np-title">Nenhuma música selecionada</div>
+      <div class="track-artist" id="np-artist"></div>
+    </div>
+  </div>
+
+  <div class="progress-row">
+    <span class="time" id="time-cur">0:00</span>
+    <input type="range" id="seek" min="0" max="100" value="0" step="0.1" />
+    <span class="time end" id="time-dur">0:00</span>
+  </div>
+
+  <div class="controls">
+    <button class="ctrl-btn" id="btn-prev" aria-label="Anterior">
+      <svg viewBox="0 0 24 24" fill="currentColor"><path d="M6 6h2v12H6zm3.5 6 8.5 6V6z"/></svg>
+    </button>
+    <button class="ctrl-btn main" id="btn-play" aria-label="Tocar">
+      <svg id="icon-play" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>
+      <svg id="icon-pause" viewBox="0 0 24 24" fill="currentColor" style="display:none"><path d="M6 5h4v14H6zM14 5h4v14h-4z"/></svg>
+    </button>
+    <button class="ctrl-btn" id="btn-next" aria-label="Próxima">
+      <svg viewBox="0 0 24 24" fill="currentColor"><path d="M16 6h2v12h-2zM6 6l8.5 6L6 18z"/></svg>
+    </button>
+  </div>
+
+  <div class="add-row">
+    <button class="btn" id="btn-add">
+      <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 5v14M5 12h14" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round"/></svg>
+      Adicionar músicas
+    </button>
+    <input type="file" id="file-input" accept="audio/*,video/*" multiple />
+  </div>
+
+  <div class="tabs">
+    <button class="tab active" data-tab="playlist">Playlist</button>
+    <button class="tab" data-tab="lyrics">Letra</button>
+  </div>
+
+  <div id="panel-playlist">
+    <ul class="playlist" id="playlist"></ul>
+    <div class="empty-state" id="playlist-empty">
+      Toque em "Adicionar músicas" e escolha arquivos de áudio ou vídeo do seu celular.
+      As letras são buscadas automaticamente pelo nome do artista e da faixa.
+    </div>
+  </div>
+
+  <div id="panel-lyrics" style="display:none">
+    <div class="lyrics-status" id="lyrics-status">Escolha uma música para ver a letra aqui.</div>
+    <div class="lyrics-box" id="lyrics-box" style="display:none"></div>
+  </div>
+
+</div>
+
+<script>
+(function(){
+  const audio = new Audio();
+  const video = document.getElementById('video-player');
+  let media = audio; // elemento ativo no momento (audio ou video)
+  let tracks = []; // {file, url, title, artist, album, type: 'audio'|'video'}
+  let currentIndex = -1;
+  const lyricsCache = new Map(); // key "artist|title" -> lyrics text or null
+
+  const el = (id) => document.getElementById(id);
+  const discHolder = document.querySelector('.disc-holder');
+  const discEl = el('disc');
+  const npTitle = el('np-title');
+  const npArtist = el('np-artist');
+  const npBox = el('now-playing');
+  const seek = el('seek');
+  const timeCur = el('time-cur');
+  const timeDur = el('time-dur');
+  const btnPlay = el('btn-play');
+  const iconPlay = el('icon-play');
+  const iconPause = el('icon-pause');
+  const trackCount = el('track-count');
+  const spectrumCanvas = el('spectrum');
+  const specCtx = spectrumCanvas.getContext('2d');
+
+  // --- Espectro de áudio (Web Audio API) ---
+  let audioCtx = null, analyser = null, dataArray = null, bufferLength = 0;
+  let spectrumRAF = null;
+
+  function ensureAudioGraph(){
+    if(audioCtx) return;
+    try{
+      audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+      const source = audioCtx.createMediaElementSource(audio);
+      analyser = audioCtx.createAnalyser();
+      analyser.fftSize = 128;
+      analyser.smoothingTimeConstant = 0.8;
+      source.connect(analyser);
+      analyser.connect(audioCtx.destination);
+      bufferLength = analyser.frequencyBinCount;
+      dataArray = new Uint8Array(bufferLength);
+    }catch(err){
+      audioCtx = null; // Web Audio indisponível; o player segue funcionando sem o efeito
+    }
+  }
+
+  function drawSpectrum(){
+    spectrumRAF = requestAnimationFrame(drawSpectrum);
+    const w = spectrumCanvas.width, h = spectrumCanvas.height;
+    specCtx.clearRect(0, 0, w, h);
+
+    const showSpectrum = analyser && media === audio && !audio.paused;
+    if(!showSpectrum) return;
+
+    analyser.getByteFrequencyData(dataArray);
+    const cx = w/2, cy = h/2;
+    const rInner = 112;
+    const rMax = 34;
+    const bars = bufferLength;
+    const style = getComputedStyle(document.documentElement);
+    specCtx.strokeStyle = style.getPropertyValue('--accent').trim() || '#E8B34D';
+    specCtx.lineWidth = 3;
+    specCtx.lineCap = 'round';
+
+    for(let i = 0; i < bars; i++){
+      const value = dataArray[i] / 255;
+      const angle = (i / bars) * Math.PI * 2 - Math.PI / 2;
+      const barLen = 4 + value * rMax;
+      const x1 = cx + Math.cos(angle) * rInner;
+      const y1 = cy + Math.sin(angle) * rInner;
+      const x2 = cx + Math.cos(angle) * (rInner + barLen);
+      const y2 = cy + Math.sin(angle) * (rInner + barLen);
+      specCtx.globalAlpha = 0.35 + value * 0.65;
+      specCtx.beginPath();
+      specCtx.moveTo(x1, y1);
+      specCtx.lineTo(x2, y2);
+      specCtx.stroke();
+    }
+    specCtx.globalAlpha = 1;
+  }
+  drawSpectrum();
+  const playlistEl = el('playlist');
+  const playlistEmpty = el('playlist-empty');
+  const lyricsStatus = el('lyrics-status');
+  const lyricsBox = el('lyrics-box');
+
+  function fmtTime(s){
+    if(!isFinite(s) || s < 0) s = 0;
+    const m = Math.floor(s/60);
+    const r = Math.floor(s%60);
+    return m + ':' + String(r).padStart(2,'0');
+  }
+
+  function guessFromFilename(name){
+    const base = name.replace(/\.[^/.]+$/, '');
+    const parts = base.split(/\s*-\s*/);
+    if(parts.length >= 2){
+      return { artist: parts[0].trim(), title: parts.slice(1).join(' - ').trim() };
+    }
+    return { artist: '', title: base.trim() };
+  }
+
+  function readTags(file){
+    return new Promise((resolve) => {
+      if(typeof jsmediatags === 'undefined'){
+        resolve(guessFromFilename(file.name));
+        return;
+      }
+      jsmediatags.read(file, {
+        onSuccess: (tag) => {
+          const t = tag.tags || {};
+          const guess = guessFromFilename(file.name);
+          resolve({
+            title: (t.title && t.title.trim()) || guess.title,
+            artist: (t.artist && t.artist.trim()) || guess.artist,
+          });
+        },
+        onError: () => resolve(guessFromFilename(file.name)),
+      });
+    });
+  }
+
+  async function addFiles(fileList){
+    const files = Array.from(fileList);
+    for(const file of files){
+      const isVideo = file.type.startsWith('video/');
+      const meta = isVideo ? guessFromFilename(file.name) : await readTags(file);
+      tracks.push({
+        file,
+        url: URL.createObjectURL(file),
+        title: meta.title || file.name,
+        artist: meta.artist || '',
+        type: isVideo ? 'video' : 'audio',
+      });
+    }
+    renderPlaylist();
+    if(currentIndex === -1 && tracks.length){
+      loadTrack(0);
+    }
+  }
+
+  function renderPlaylist(){
+    trackCount.textContent = tracks.length + (tracks.length === 1 ? ' música' : ' músicas');
+    playlistEmpty.style.display = tracks.length ? 'none' : 'block';
+    playlistEl.innerHTML = '';
+    tracks.forEach((t, i) => {
+      const li = document.createElement('li');
+      li.className = i === currentIndex ? 'active' : '';
+      li.innerHTML =
+        '<span class="idx">' + (i+1) + '</span>' +
+        '<div class="meta"><div class="t">' + escapeHtml(t.title) + '</div>' +
+        '<div class="a">' + escapeHtml(t.artist || 'Artista desconhecido') + '</div></div>';
+      li.addEventListener('click', () => loadTrack(i, true));
+      playlistEl.appendChild(li);
+    });
+  }
+
+  function escapeHtml(s){
+    const d = document.createElement('div');
+    d.textContent = s || '';
+    return d.innerHTML;
+  }
+
+  function loadTrack(i, autoplay){
+    if(i < 0 || i >= tracks.length) return;
+
+    // Para a mídia atual antes de trocar
+    audio.pause();
+    video.pause();
+
+    currentIndex = i;
+    const t = tracks[i];
+    media = t.type === 'video' ? video : audio;
+
+    if(t.type === 'video'){
+      discHolder.style.display = 'none';
+      video.style.display = 'block';
+    }else{
+      discHolder.style.display = '';
+      video.style.display = 'none';
+      video.removeAttribute('src');
+    }
+
+    media.src = t.url;
+    npTitle.textContent = t.title;
+    npArtist.textContent = t.artist || 'Artista desconhecido';
+    npBox.classList.remove('empty');
+    renderPlaylist();
+    fetchLyrics(t);
+    if(autoplay !== false){
+      if(media === audio){ ensureAudioGraph(); if(audioCtx && audioCtx.state === 'suspended') audioCtx.resume(); }
+      media.play().catch(()=>{});
+    }
+  }
+
+  function togglePlay(){
+    if(currentIndex === -1){
+      if(tracks.length) loadTrack(0);
+      return;
+    }
+    if(media.paused){
+      if(media === audio){ ensureAudioGraph(); if(audioCtx && audioCtx.state === 'suspended') audioCtx.resume(); }
+      media.play().catch(()=>{});
+    }
+    else { media.pause(); }
+  }
+
+  function onPlay(e){
+    if(e.target !== media) return;
+    discEl.classList.add('playing');
+    iconPlay.style.display = 'none';
+    iconPause.style.display = '';
+  }
+  function onPause(e){
+    if(e.target !== media) return;
+    discEl.classList.remove('playing');
+    iconPlay.style.display = '';
+    iconPause.style.display = 'none';
+  }
+  function onTimeUpdate(e){
+    if(e.target !== media) return;
+    if(!isNaN(media.duration)){
+      seek.max = media.duration || 0;
+      seek.value = media.currentTime;
+    }
+    timeCur.textContent = fmtTime(media.currentTime);
+    timeDur.textContent = fmtTime(media.duration);
+  }
+  function onLoadedMeta(e){
+    if(e.target !== media) return;
+    seek.max = media.duration || 0;
+    timeDur.textContent = fmtTime(media.duration);
+  }
+  function onEnded(e){
+    if(e.target !== media) return;
+    nextTrack();
+  }
+
+  [audio, video].forEach((m) => {
+    m.addEventListener('play', onPlay);
+    m.addEventListener('pause', onPause);
+    m.addEventListener('timeupdate', onTimeUpdate);
+    m.addEventListener('loadedmetadata', onLoadedMeta);
+    m.addEventListener('ended', onEnded);
+  });
+
+  seek.addEventListener('input', () => { media.currentTime = seek.value; });
+
+  function nextTrack(){
+    if(!tracks.length) return;
+    loadTrack((currentIndex + 1) % tracks.length);
+  }
+  function prevTrack(){
+    if(!tracks.length) return;
+    loadTrack((currentIndex - 1 + tracks.length) % tracks.length);
+  }
+
+  btnPlay.addEventListener('click', togglePlay);
+  el('btn-next').addEventListener('click', nextTrack);
+  el('btn-prev').addEventListener('click', prevTrack);
+
+  el('btn-add').addEventListener('click', () => el('file-input').click());
+  el('file-input').addEventListener('change', (e) => {
+    if(e.target.files && e.target.files.length){
+      addFiles(e.target.files);
+    }
+    e.target.value = '';
+  });
+
+  // Abas
+  document.querySelectorAll('.tab').forEach((tab) => {
+    tab.addEventListener('click', () => {
+      document.querySelectorAll('.tab').forEach((x) => x.classList.remove('active'));
+      tab.classList.add('active');
+      const name = tab.dataset.tab;
+      el('panel-playlist').style.display = name === 'playlist' ? '' : 'none';
+      el('panel-lyrics').style.display = name === 'lyrics' ? '' : 'none';
+    });
+  });
+
+  // Busca automática de letras (lyrics.ovh)
+  async function fetchLyrics(track){
+    lyricsBox.style.display = 'none';
+    lyricsStatus.style.display = 'block';
+
+    if(!track.artist || !track.title){
+      lyricsStatus.textContent = 'Não foi possível identificar artista e faixa para buscar a letra automaticamente.';
+      return;
+    }
+
+    const key = (track.artist + '|' + track.title).toLowerCase();
+    if(lyricsCache.has(key)){
+      showLyrics(lyricsCache.get(key));
+      return;
+    }
+
+    lyricsStatus.textContent = 'Buscando letra de "' + track.title + '"...';
+
+    try{
+      const url = 'https://api.lyrics.ovh/v1/' + encodeURIComponent(track.artist) + '/' + encodeURIComponent(track.title);
+      const res = await fetch(url);
+      if(!res.ok){
+        lyricsCache.set(key, null);
+        // Evita sobrescrever se a faixa já mudou nesse meio tempo
+        if(tracks[currentIndex] === track) showLyrics(null);
+        return;
+      }
+      const data = await res.json();
+      const text = (data.lyrics || '').trim() || null;
+      lyricsCache.set(key, text);
+      if(tracks[currentIndex] === track) showLyrics(text);
+    }catch(err){
+      lyricsCache.set(key, null);
+      if(tracks[currentIndex] === track){
+        lyricsStatus.textContent = 'Não foi possível buscar a letra agora. Verifique sua conexão.';
+      }
+    }
+  }
+
+  function showLyrics(text){
+    if(text){
+      lyricsStatus.style.display = 'none';
+      lyricsBox.style.display = 'block';
+      lyricsBox.textContent = text;
+    }else{
+      lyricsBox.style.display = 'none';
+      lyricsStatus.style.display = 'block';
+      lyricsStatus.textContent = 'Letra não encontrada para esta música.';
+    }
+  }
+
+  // Registro do service worker (instalação como PWA)
+  if('serviceWorker' in navigator){
+    window.addEventListener('load', () => {
+      navigator.serviceWorker.register('sw.js').catch(()=>{});
+    });
+  }
+})();
+</script>
+</body>
+</html>
