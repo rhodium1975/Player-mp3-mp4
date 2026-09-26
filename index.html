@@ -405,6 +405,8 @@
   // --- Espectro de áudio (Web Audio API) ---
   let audioCtx = null, analyser = null, dataArray = null, bufferLength = 0;
   let spectrumRAF = null;
+  let spectrumRotation = 0;
+  let spectrumHue = 0;
 
   function ensureAudioGraph(){
     if(audioCtx) return;
@@ -436,19 +438,22 @@
     const rInner = 112;
     const rMax = 34;
     const bars = bufferLength;
-    const style = getComputedStyle(document.documentElement);
-    specCtx.strokeStyle = style.getPropertyValue('--accent').trim() || '#E8B34D';
     specCtx.lineWidth = 3;
     specCtx.lineCap = 'round';
 
+    spectrumRotation += 0.004;
+    spectrumHue = (spectrumHue + 0.5) % 360;
+
     for(let i = 0; i < bars; i++){
       const value = dataArray[i] / 255;
-      const angle = (i / bars) * Math.PI * 2 - Math.PI / 2;
+      const angle = (i / bars) * Math.PI * 2 - Math.PI / 2 + spectrumRotation;
       const barLen = 4 + value * rMax;
       const x1 = cx + Math.cos(angle) * rInner;
       const y1 = cy + Math.sin(angle) * rInner;
       const x2 = cx + Math.cos(angle) * (rInner + barLen);
       const y2 = cy + Math.sin(angle) * (rInner + barLen);
+      const hue = (spectrumHue + (i / bars) * 360) % 360;
+      specCtx.strokeStyle = 'hsl(' + hue + ', 85%, 62%)';
       specCtx.globalAlpha = 0.35 + value * 0.65;
       specCtx.beginPath();
       specCtx.moveTo(x1, y1);
